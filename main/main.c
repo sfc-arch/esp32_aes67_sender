@@ -1,3 +1,19 @@
+#define ESP_AP_CONNECT true
+
+#if (ESP_AP_CONNECT == true)
+    #define WIFI_SSID "ESP32_wifi"
+    #define WIFI_PASSWORD "esp32pass"
+    #define OPPONENT_UDP_PORT 5004
+    #define SET_IPADDR4(ipAddr) \
+        IP_ADDR4(#ipAddr, 192, 168, 4, 1);
+#else
+    #define WIFI_SSID "WX03_Todoroki"
+    #define WIFI_PASSWORD "TodorokiWX03"
+    #define OPPONENT_UDP_PORT 50505
+    #define SET_IPADDR4(ipAddr) \
+        IP_ADDR4(#ipAddr, 192, 168, 179, 5);
+#endif
+
 #include "freertos/FreeRTOS.h"
 #include "esp_wifi.h"
 #include "esp_system.h"
@@ -19,19 +35,7 @@
 #include "lwip/udp.h"
 #include "lwip/ip_addr.h"
 
-#define ESP_AP_CONNECT false
-
-#if (ESP_AP_CONNECT == true)
-    #define WIFI_SSID "ESP32_wifi"
-    #define WIFI_PASSWORD "esp32pass"
-#else
-    #define WIFI_SSID "WX03_Todoroki"
-    #define WIFI_PASSWORD "TodorokiWX03"
-#endif
-
 #define UDP_PAYLOAD_SIZE 50
-
-#define OPPONENT_UDP_PORT 50505
 
 /* --- PRINTF_BYTE_TO_BINARY macro's --- */
 #define PRINTF_BINARY_SEPARATOR
@@ -282,7 +286,11 @@ void app_main(void)
     struct pbuf *p;
     ip_addr_t ipAddr;
     err_t err;
-    IP_ADDR4(&ipAddr, 192, 168, 179, 5);
+    #if (ESP_AP_CONNECT == true)
+        IP_ADDR4(&ipAddr, 192, 168, 4, 1);
+    #else
+        IP_ADDR4(&ipAddr, 192, 168, 179, 5);
+    #endif
     udp = udp_new();
     err = udp_connect(udp, &ipAddr, OPPONENT_UDP_PORT);
 
