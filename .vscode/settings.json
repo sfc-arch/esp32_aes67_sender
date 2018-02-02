@@ -1,0 +1,12 @@
+{
+  "terminal.integrated.env.linux": {
+    "PATH": "/home/todoroki/.platformio/penv/bin:/home/todoroki/.cargo/bin:/home/todoroki/.asdf/bin:/home/todoroki/.asdf/shims:/home/todoroki/esp/xtensa-esp32-elf/bin/:/home/todoroki/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/bin:/sbin"
+  },
+  "files.associations": {
+    "sstream": "cpp",
+    "array": "cpp",
+    "string_view": "cpp",
+    "initializer_list": "cpp",
+    "udp.h": "c"
+  }
+}
