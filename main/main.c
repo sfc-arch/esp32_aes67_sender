@@ -1,17 +1,15 @@
-#define ESP_AP_CONNECT true
-
-#if (ESP_AP_CONNECT == true)
+#ifdef ESP_AP_CONNECT
     #define WIFI_SSID "ESP32_wifi"
     #define WIFI_PASSWORD "esp32pass"
     #define OPPONENT_UDP_PORT 5004
     #define SET_IPADDR4(ipAddr) \
-        IP_ADDR4(#ipAddr, 192, 168, 4, 1);
+        IP_ADDR4((ipAddr), 192, 168, 4, 255);
 #else
     #define WIFI_SSID "WX03_Todoroki"
     #define WIFI_PASSWORD "TodorokiWX03"
     #define OPPONENT_UDP_PORT 50505
     #define SET_IPADDR4(ipAddr) \
-        IP_ADDR4(#ipAddr, 192, 168, 179, 5);
+        IP_ADDR4((ipAddr), 192, 168, 179, 6);
 #endif
 
 #include "freertos/FreeRTOS.h"
@@ -26,6 +24,7 @@
 #include "stdio.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>  // Boolean
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -84,6 +83,8 @@ void esp32setup()
 
 void esp32connectToWiFi()
 {
+    bool wifiConnected = false;
+
     wifi_config_t sta_config = {
         .sta = {
             .ssid = WIFI_SSID,
@@ -92,10 +93,18 @@ void esp32connectToWiFi()
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_wifi_connect());
-    ESP_LOGI(TAG, "wifi connect is %d", esp_wifi_connect());
 
-    // wait until wifi connects
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "Connecting to wifi: %s", WIFI_SSID);
+
+    while( !wifiConnected ) {
+        wifiConnected = esp_wifi_connect();
+
+        // wait until wifi connects
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    };
+
+    ESP_LOGI(TAG, "wifi connect is %d", wifiConnected);
+    ESP_LOGI(TAG, "-> Connected to: %s", WIFI_SSID);
 }
 
 unsigned int microsFromStart()
@@ -286,11 +295,7 @@ void app_main(void)
     struct pbuf *p;
     ip_addr_t ipAddr;
     err_t err;
-    #if (ESP_AP_CONNECT == true)
-        IP_ADDR4(&ipAddr, 192, 168, 4, 1);
-    #else
-        IP_ADDR4(&ipAddr, 192, 168, 179, 5);
-    #endif
+    SET_IPADDR4(&ipAddr);
     udp = udp_new();
     err = udp_connect(udp, &ipAddr, OPPONENT_UDP_PORT);
 
@@ -309,17 +314,20 @@ void app_main(void)
     p = pbuf_alloc(PBUF_TRANSPORT, aes67->payloadOctetsCount, PBUF_RAM);
     memcpy(p->payload, hex, aes67->payloadOctetsCount);
 
-    err = udp_send(udp, p);
-    // udp_send(udp, p);
+    // Presend packet. No need
+    /* 
+        err = udp_send(udp, p);
+        // udp_send(udp, p);
 
-    if (err != 0)
-    {
-        ESP_LOGI(TAG, "err is %d", err);
-    };
-    // free(p);
+        if (err != 0)
+        {
+            ESP_LOGI(TAG, "err is %d", err);
+        };
+        // free(p);
+    */
 
-    // Send 100 packets
-    while (true && count < 1000)
+    // Send packets
+    while (true)
     {
         count++;
 

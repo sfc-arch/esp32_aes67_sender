@@ -4,8 +4,9 @@
 #
 
 PROJECT_NAME := app-template
+# ESP_AP_CONNECT := false
 
-IDF_PATH = /home/todoroki/esp/esp-idf-v3.0-rc1
+# CFLAGS += -D ESP_AP_CONNECT=false
 
 include $(IDF_PATH)/make/project.mk
 
