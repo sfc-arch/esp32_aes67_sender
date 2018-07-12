@@ -83,7 +83,7 @@ void esp32setup()
 
 void esp32connectToWiFi()
 {
-    bool wifiConnected = false;
+    esp_err_t wifiConnected = ESP_ERR_WIFI_NOT_INIT;
 
     wifi_config_t sta_config = {
         .sta = {
@@ -96,7 +96,8 @@ void esp32connectToWiFi()
 
     ESP_LOGI(TAG, "Connecting to wifi: %s", WIFI_SSID);
 
-    while( !wifiConnected ) {
+    while( wifiConnected != ESP_OK ) {
+        ESP_LOGI(TAG, "wifi connect is %d", wifiConnected);
         wifiConnected = esp_wifi_connect();
 
         // wait until wifi connects
@@ -105,6 +106,8 @@ void esp32connectToWiFi()
 
     ESP_LOGI(TAG, "wifi connect is %d", wifiConnected);
     ESP_LOGI(TAG, "-> Connected to: %s", WIFI_SSID);
+
+    vTaskDelay(3000 / portTICK_PERIOD_MS);  // 終わるまで待つ
 }
 
 unsigned int microsFromStart()
@@ -190,7 +193,8 @@ AES67 * aes67_l16_48khz_from_scratch(
     return aes67;
 }
 
-void aes67renewal(AES67 * aes67, unsigned int timestamp) {
+void aes67renewal(AES67 * aes67, unsigned short count, unsigned int timestamp) {
+    aes67->sequenceNumber = count;
     aes67->timestamp = timestamp;
     free(aes67->payloadElements);
     free(aes67->payload);
@@ -303,7 +307,7 @@ void app_main(void)
     char payload[UDP_PAYLOAD_SIZE];
     memset(payload, 0, UDP_PAYLOAD_SIZE);
 
-    AES67 * aes67 = aes67_l16_48khz_from_scratch(50, microsFromStart(), 52);
+    AES67 * aes67 = aes67_l16_48khz_from_scratch(0, microsFromStart(), 52);
 
     unsigned int numberOfOctets = aes67->totalBits / 8 + (aes67->totalBits % 8 != 0);
     char *hex = (char *)calloc(numberOfOctets, sizeof(char));
@@ -332,7 +336,7 @@ void app_main(void)
         count++;
 
         // renew AES67 struct
-        aes67renewal(aes67, microsFromStart());
+        aes67renewal(aes67, count, microsFromStart());
         aes67createSamplePayload(aes67, count);
         aes67toHexArray(hex, aes67);
 

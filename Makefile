@@ -4,9 +4,8 @@
 #
 
 PROJECT_NAME := app-template
-# ESP_AP_CONNECT := false
 
-# CFLAGS += -D ESP_AP_CONNECT=false
+# CFLAGS += -D ESP_AP_CONNECT
 
 include $(IDF_PATH)/make/project.mk
 
