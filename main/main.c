@@ -96,11 +96,10 @@ void esp32connectToWiFi()
 
     ESP_LOGI(TAG, "Connecting to wifi: %s", WIFI_SSID);
 
+    // wait until wifi connects
     while( wifiConnected != ESP_OK ) {
         ESP_LOGI(TAG, "wifi connect is %d", wifiConnected);
         wifiConnected = esp_wifi_connect();
-
-        // wait until wifi connects
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     };
 
@@ -318,18 +317,6 @@ void app_main(void)
     p = pbuf_alloc(PBUF_TRANSPORT, aes67->payloadOctetsCount, PBUF_RAM);
     memcpy(p->payload, hex, aes67->payloadOctetsCount);
 
-    // Presend packet. No need
-    /* 
-        err = udp_send(udp, p);
-        // udp_send(udp, p);
-
-        if (err != 0)
-        {
-            ESP_LOGI(TAG, "err is %d", err);
-        };
-        // free(p);
-    */
-
     // Send packets
     while (true)
     {
@@ -340,17 +327,13 @@ void app_main(void)
         aes67createSamplePayload(aes67, count);
         aes67toHexArray(hex, aes67);
 
-        // pbuf_realloc(p, aes67->payloadOctetsCount);
-        // p = pbuf_alloc(PBUF_TRANSPORT, aes67->payloadOctetsCount, PBUF_RAM);
+        // copy new payload
         memcpy(p->payload, hex, aes67->payloadOctetsCount);
 
-        // ESP_LOGI(TAG, "No. %d at %u, octetSize: %u", count, microsFromStart(), aes67->payloadOctetsCount);
+        result = udp_send(udp, p);
 
-        err = udp_send(udp, p);
-        // udp_send(udp, p);
-
-        if (err != 0) {
-            ESP_LOGI(TAG, "%d - err is %d", count, err);
+        if (result != 0) {
+            ESP_LOGI(TAG, "%d - error code is %d", count, result);
         };
 
         vTaskDelay(1);
