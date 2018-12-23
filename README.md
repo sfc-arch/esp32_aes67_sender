@@ -1,3 +1,9 @@
+# MOVED
+This repository is not maintained. The development continues in my personal repository.
+
+https://github.com/ndac-todoroki/esp32_aes67_sender
+
+
 # ESP32 AES67 audio over IP (over WiFi) trial prototype application
 
 This is a experimental application which aims to send audio packets via WiFi, while following the AES67 audio-over-IP requirements.
